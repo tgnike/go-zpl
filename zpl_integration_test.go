@@ -7,8 +7,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/kamilturek/go-zpl"
-	zplutils "github.com/kamilturek/go-zpl/utils"
+	"github.com/tgnike/go-zpl"
+	zplutils "github.com/tgnike/go-zpl/utils"
 )
 
 func TestConvert(t *testing.T) {

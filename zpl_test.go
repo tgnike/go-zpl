@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	zpl "github.com/kamilturek/go-zpl"
+	zpl "github.com/tgnike/go-zpl"
 )
 
 func TestWithInput(t *testing.T) {
