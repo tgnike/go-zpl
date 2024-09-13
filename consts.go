@@ -1,8 +1,9 @@
 package zpl
 
 const (
-	PDF = "pdf"
-	PNG = "png"
+	PDF  = "pdf"
+	PNG  = "png"
+	JSON = "json"
 )
 
 func allowedDensities() []int {

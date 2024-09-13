@@ -16,6 +16,7 @@ type converter struct {
 	density      int // dpmm
 	width        int // inch
 	height       int // inch
+	index        int
 }
 
 type option func(c *converter) error
@@ -114,6 +115,14 @@ func WithWidth(width int) option {
 	}
 }
 
+func WithIndex(index int) option {
+	return func(c *converter) error {
+		c.index = index
+
+		return nil
+	}
+}
+
 func WithHeight(height int) option {
 	return func(c *converter) error {
 		c.height = height
@@ -130,6 +139,7 @@ func NewConverter(opts ...option) (*converter, error) {
 		density:      8,
 		width:        4,
 		height:       6,
+		index:        0,
 	}
 
 	for _, opt := range opts {
@@ -157,7 +167,7 @@ func (conv *converter) Convert() error {
 }
 
 func (conv *converter) doRequest() (io.ReadCloser, error) {
-	url := fmt.Sprintf("http://api.labelary.com/v1/printers/%ddpmm/labels/%dx%d/0/", conv.density, conv.width, conv.height)
+	url := fmt.Sprintf("http://api.labelary.com/v1/printers/%ddpmm/labels/%dx%d/%d/", conv.density, conv.width, conv.height, conv.index)
 
 	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, url, conv.Input)
 	if err != nil {
@@ -165,8 +175,9 @@ func (conv *converter) doRequest() (io.ReadCloser, error) {
 	}
 
 	contentTypes := map[string]string{
-		PDF: "application/pdf",
-		PNG: "image/png",
+		PDF:  "application/pdf",
+		PNG:  "image/png",
+		JSON: "application/json",
 	}
 
 	req.Header.Set("Accept", contentTypes[conv.outputFormat])
@@ -212,6 +223,33 @@ func ConvertBytes(content []byte, opts ...option) ([]byte, error) {
 
 func ToPNG(content []byte, opts ...option) ([]byte, error) {
 	options := []option{WithOutputFormat(PNG)}
+	options = append(options, opts...)
+
+	return ConvertBytes(content, options...)
+}
+
+func ToPNGMultiple(content []byte, quantity int, opts ...option) ([][]byte, error) {
+
+	result := make([][]byte, 0)
+
+	for i := 0; i < quantity; i++ {
+
+		options := []option{WithIndex(i)}
+		options = append(options, opts...)
+
+		b, err := ToPNG(content, options...)
+
+		if err == nil {
+			result = append(result, b)
+		}
+	}
+
+	return result, nil
+}
+
+func ToJSON(content []byte, opts ...option) ([]byte, error) {
+
+	options := []option{WithOutputFormat(JSON)}
 	options = append(options, opts...)
 
 	return ConvertBytes(content, options...)
